@@ -1,1 +1,5 @@
 images/
+images-split/
+digit0/
+digit0-org/
+*.png

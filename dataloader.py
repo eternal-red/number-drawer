@@ -89,12 +89,11 @@ from matplotlib import cm
  
 
 i=0
-for img in x_train:
+for img in zip(x_train, y_train):
     i+=1
-    im = Image.fromarray(np.array(img))
-    im.save(f'images/image{i}.png')
+    im = Image.fromarray(np.array(img[0]))
+    im.save(f'images-split/digit{img[1]}/image{i}.png')
 
-exit
 #
 # Show some random training and test images 
 #
