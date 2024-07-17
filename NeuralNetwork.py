@@ -1204,14 +1204,14 @@ labels = []
 
 for i in range(9):
     for j, img_path in enumerate(os.listdir(rf"digit0/{i}")):
-        if j >= 18000:
+        if j >= 18000: #too much data
             break
         if (img_path.split('.')[-1] != "png"):
             continue
         img = cv2.imread(rf'digit0/{i}/{img_path}', cv2.IMREAD_GRAYSCALE)
         data.append(img)
         labels.append(i)
-        if j % 50 == 0:
+        if j % 1000 == 0:
             print(f"loading label {i} ({j}/{len(os.listdir(rf'digit0/{i}'))})")
 #img = Image.fromarray(data[0]) #.size
 #img.show()
@@ -1232,9 +1232,11 @@ model.add(Layer_Dense(input_dim[0] * input_dim[1], 128, weight_regularizer_l2=5e
 model.add(Activation_ReLU())
 model.add(Layer_Dropout(0.15))
 model.add(Layer_Dense(128,64))
+
 model.add(Activation_ReLU())
 model.add(Layer_Dropout(0.15))
 model.add(Layer_Dense(64, 9))
+
 model.add(Activation_Softmax())
 
 # Set loss, optimizer and accuracy objects
@@ -1247,24 +1249,13 @@ model.set(
 # Finalize the model
 model.finalize()
 
-#hyper-parameter tuning
-import hyperopt
-import space
-tpe_algo=hyperopt.tpe.suggest
-tpe_trials=hyperopt.Trials()
-
-parameter_space=[
-    space.Integer(0,1, name="learning_rate"),
-    space.Float(0,0.2, name="decay")
-]
-
-param_names=["learning_rate", "decay"]
-tpe_best = hyperopt.fmin(fn=optimize, space=parameter_space, algo=tpe_algo, trials=tpe_trials, 
-                max_evals=2000, rstate= np.random.RandomState(50))
-
 
 # Train the model
 print("training model...")
 model.train(x, y, validation_data=(x_test, y_test),
-            epochs=2000, batch_size=128, print_every=100)
+            epochs=100, batch_size=128, print_every=1)
 model.save("numDrawer.model")
+'''
+model = Model.load('data/numDrawer.model')
+print("accuracy on training data", model.evaluate(x, y, batch_size=128))
+print("accuracy on testing data", model.evaluate(x_test, y_test, batch_size=128)) '''
