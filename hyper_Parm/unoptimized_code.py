@@ -5,7 +5,6 @@ import pickle
 import copy
 
 
-
 # Dense layer
 class Layer_Dense:
 
@@ -303,7 +302,7 @@ class Optimizer_Adagrad:
         # If layer does not contain cache arrays,
         # create them filled with zeros
         if not hasattr(layer, 'weight_cache'):
-            layer.weight_cache = np.zeros_like(shape=layer.weights.shape)
+            layer.weight_cache = np.zeros(shape=layer.weights.shape)
             layer.bias_cache = np.zeros(shape=layer.biases.shape)
 
         # Update cache with squared current gradients
@@ -1198,24 +1197,35 @@ input_dim = (28, 28)
 data = []
 labels = []
 
-for i in range(9):
+map = {
+        1: [1, 0, 0, 1],
+        2: [1, 0, 0, 0],
+        3: [1, 1, 0, 0],
+        4: [0, 1, 0, 0],
+        5: [0, 1, 1, 0],
+        6: [0, 0, 1, 0],
+        7: [0, 0, 1, 1],
+        8: [0, 0, 0, 1]
+        }
+
+for i in range(1, 9):
     for j, img_path in enumerate(os.listdir(rf"digit0/{i}")):
         # if i==0 and j>=500: 
         #     break
-        if j >= 2000: 
+        if j >= 10000: 
             break
         if (img_path.split('.')[-1] != "png"):
             continue
         img = cv2.imread(rf'digit0/{i}/{img_path}', cv2.IMREAD_GRAYSCALE)
         data.append(img)
-        labels.append(i)
+        labels.append(np.asarray([map[i]]))
         if j % 1000 == 0:
             print(f"loading label {i} ({j}/{len(os.listdir(rf'digit0/{i}'))})")
 #img = Image.fromarray(data[0]) #.size
 #img.show()
-x, y = np.asarray(data, dtype=float), np.asarray(labels)
+x, y = np.asarray(data, dtype=float), np.vstack(labels)
 x, y = unison_shuffled_copies(x, y)
-x = np.piecewise(x, [x == 127, x == 255], [-1, 1])
+x = np.piecewise(x, [x < 255, x == 255], [lambda x: x/(255*2), 1])
 x = x.reshape(-1, input_dim[0]*input_dim[1])
 
 
@@ -1223,10 +1233,10 @@ n = len(x)
 (x_test, x_hyper, x) = x[int(n*0.8):], x[int(n*0.7):int(n*0.8)], x[:int(n*0.7)]
 (y_test, y_hyper, y) = y[int(n*0.8):], y[int(n*0.7):int(n*0.8)], y[:int(n*0.7)]
 
-params= {'batch_size': 128.0, 'dropout1': 0.2485290085467339, 'dropout2': 0.2535070321523609, 
-            'l2_bias': 0.02951343017536874, 'l2_weight': 0.0052275899914965875, 'neurons1': 178.0,
-            'neurons2': 202.0, 'optimizer_dc': 0.001, 'optimizer_lr': 0.00402}
-params['batch_size'] = 200
+params=  {'batch_size': 468.0, 'dropout1': 0.13528349484046585, 'dropout2': 0.21131184717480492, 
+          'l2_bias': 0.0013450084560870743, 'l2_weight': 0.00034931023996193934, 'neurons1': 323.0, 
+          'neurons2': 237.0, 'optimizer_dc': 0.00019211515063882146, 'optimizer_lr': 0.008065719974966683}
+# params['batch_size'] = 200
 # Instantiate the model
 model = Model()
 
@@ -1237,7 +1247,7 @@ model.add(Layer_Dropout(params['dropout1']))
 model.add(Layer_Dense(int(params['neurons1']),int(params['neurons2'])))
 model.add(Activation_ReLU())
 model.add(Layer_Dropout(params['dropout2']))
-model.add(Layer_Dense(int(params['neurons2']), 9))
+model.add(Layer_Dense(int(params['neurons2']), 4))
 model.add(Activation_Softmax())
 
 # Set loss, optimizer and accuracy objects
