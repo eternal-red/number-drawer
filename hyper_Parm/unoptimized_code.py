@@ -1208,7 +1208,7 @@ map = {
         8: [0, 0, 0, 1]
         }
 
-for i in range(1, 9):
+'''for i in range(1, 9):
     for j, img_path in enumerate(os.listdir(rf"digit0/{i}")):
         # if i==0 and j>=500: 
         #     break
@@ -1268,3 +1268,4 @@ model.save("data/numDrawer.model")
 
 #command to run profiler
 #python -mcProfile -o program.prof optimized_code.py
+'''
